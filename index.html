@@ -18,7 +18,7 @@
         width: 68vmin;
         height: 68vmin;
         transform: translate(-50%, -50%);
-        z-index: 5;
+        z-index: 1;
         pointer-events: none;
         box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
         border-radius: 18px;
@@ -41,6 +41,19 @@
         animation: scan 2s ease-in-out infinite alternate;
       }
       @keyframes scan { from { top: 6%; } to { top: 94%; } }
+
+      #msg {
+        display: none;
+        position: fixed;
+        top: 12px; left: 12px; right: 12px;
+        z-index: 30;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: rgba(200, 30, 30, 0.92);
+        color: #fff;
+        font: 15px/1.6 Tahoma, Arial, sans-serif;
+        text-align: center;
+      }
 
       /* ===== الأزرار (مخفية لحد ما التارجيت يتعرف) ===== */
       .btn-bar {
@@ -107,7 +120,8 @@
     <audio id="sound2" src="./assets/sound2.mp3" preload="auto"></audio>
     <audio id="bgm" src="./assets/bgm.mp3" preload="auto" loop></audio>
 
-    <div id="scanner"><i></i><i></i><i></i><i></i><b></b></div>
+    <div id="msg"></div>
+    <div id="scanner" class="hidden"><i></i><i></i><i></i><i></i><b></b></div>
 
     <div class="btn-bar" id="btnBar">
       <button id="btn1" class="kid-btn" aria-label="صوت الحيوان"></button>
@@ -115,9 +129,6 @@
     </div>
 
     <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; showStats: false; uiScanning: no;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <a-assets>
-        <a-asset-item id="avatarModel" src="./assets/model.glb"></a-asset-item>
-      </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
@@ -127,7 +138,7 @@
           وبعدها يفضل يطفو لفوق وتحت.
           لتغيير حجم النموذج النهائي: غيّر الرقم 0.5 في to: (ثلاث مرات) ولا تلمس باقي الأرقام.
         -->
-        <a-gltf-model id="avatar" src="#avatarModel"
+        <a-gltf-model id="avatar" src="./assets/model.glb"
           position="0 0 0.1" rotation="0 0 0" scale="0 0 0"
           animation__pop="property: scale; from: 0 0 0; to: 0.5 0.5 0.5; dur: 1100; easing: easeOutElastic; startEvents: appear"
           animation__spin="property: rotation; from: 0 -360 0; to: 0 0 0; dur: 1100; easing: easeOutCubic; startEvents: appear"
@@ -144,6 +155,35 @@
       const bgm = document.getElementById("bgm");
       bgm.volume = 0.5;
       let targetVisible = false;
+      let arIsReady = false;
+
+      const scene = document.querySelector("a-scene");
+      const msg = document.getElementById("msg");
+      function showMsg(t) { msg.textContent = t; msg.style.display = "block"; }
+
+      // الكاميرا اشتغلت والتتبع جاهز
+      scene.addEventListener("arReady", () => {
+        arIsReady = true;
+        msg.style.display = "none";
+        if (!targetVisible) scanner.classList.remove("hidden");
+      });
+
+      // فشل تشغيل الكاميرا أو تحميل targets.mind
+      scene.addEventListener("arError", () => {
+        showMsg("تعذّر تشغيل الكاميرا أو تحميل targets.mind. افتح الرابط من Chrome، اسمح بالكاميرا، وتأكد إن الملف موجود في assets.");
+      });
+
+      // أخطاء تحميل المكتبات
+      window.addEventListener("error", (e) => {
+        const el = e.target;
+        if (el && el.tagName && el.tagName !== "SCRIPT") return;
+        showMsg("مشكلة في تحميل: " + ((el && el.src) || e.message));
+      }, true);
+
+      // لو الكاميرا ما جهزتش بعد 12 ثانية
+      setTimeout(() => {
+        if (!arIsReady) showMsg("لسه بيحمّل... لو الكاميرا ما فتحتش افتح الرابط من Chrome وتأكد من ملفات assets.");
+      }, 12000);
 
       const buttons = [
         { btn: document.getElementById("btn1"), sound: document.getElementById("sound1") },

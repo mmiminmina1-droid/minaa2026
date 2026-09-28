@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AR ··√ÿ›«·</title>
+  <title>AR √°√°√É√ò√ù√á√°</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
     body { margin: 0; overflow: hidden; }
 
-    /* ===== ‘«‘… «·„”Õ (”ﬂ«‰—) ===== */
+    /* ===== √î√á√î√â √á√°√£√ì√ç (√ì√ü√á√§√ë) ===== */
     #scanner {
       position: fixed; top: 50%; left: 50%;
       width: 68vmin; height: 68vmin;
@@ -29,7 +29,7 @@
     }
     @keyframes scan { from { top: 6%; } to { top: 94%; } }
 
-    /* ===== «·√“—«— ===== */
+    /* ===== √á√°√É√í√ë√á√ë ===== */
     .btn-bar {
       position: fixed; bottom: 25px; left: 0; width: 100%;
       display: flex; justify-content: center; gap: 24px;
@@ -59,17 +59,17 @@
 </head>
 
 <body>
-  <!-- ===== „·›«  «·’Ê  (ﬂ·Â« ›Ì „Ã·œ assets) ===== -->
+  <!-- ===== √£√°√ù√á√ä √á√°√ï√¶√ä (√ü√°√•√á √ù√≠ √£√å√°√è assets) ===== -->
   <audio id="sound1" src="./assets/sound1.mp3" preload="auto"></audio>
   <audio id="sound2" src="./assets/sound2.mp3" preload="auto"></audio>
   <audio id="bgm" src="./assets/bgm.mp3" preload="auto" loop></audio>
 
   <div id="scanner"><b></b></div>
 
-  <!-- ===== «·“—«—Ì‰ (»ÌŸÂ—Ê« ·„« «· «—ÃÌ  Ì ⁄—›) ===== -->
+  <!-- ===== √á√°√í√ë√á√ë√≠√§ (√à√≠√ô√•√ë√¶√á √°√£√á √á√°√ä√á√ë√å√≠√ä √≠√ä√ö√ë√ù) ===== -->
   <div class="btn-bar" id="btnBar">
-    <button id="btn1" class="kid-btn" aria-label="«·’Ê  «·√Ê·"></button>
-    <button id="btn2" class="kid-btn" aria-label="«·’Ê  «·À«‰Ì"></button>
+    <button id="btn1" class="kid-btn" aria-label="√á√°√ï√¶√ä √á√°√É√¶√°"></button>
+    <button id="btn2" class="kid-btn" aria-label="√á√°√ï√¶√ä √á√°√ã√á√§√≠"></button>
   </div>
 
   <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; uiScanning: no;"
@@ -79,8 +79,8 @@
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
     <a-entity id="target" mindar-image-target="targetIndex: 0">
-      <!-- ===== «·„ÊœÌ· ›ﬁÿ ó „›Ì‘ ’Ê— ===== -->
-      <a-gltf-model id="avatar" rotation="0 0 0" position="0 0 0.1" scale="0.005 0.005 0.005"
+      <!-- ===== √á√°√£√¶√è√≠√° √ù√û√ò ‚Äî √£√ù√≠√î √ï√¶√ë ===== -->
+      <a-gltf-model id="avatar" rotation="0 0 0" position="0 0 0.1" scale="0.05 0.05 0.05"
         src="./assets/model.glb"
         animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
       </a-gltf-model>
@@ -107,14 +107,14 @@
       bgm.play().catch(() => {});
     }
 
-    // ===== ·„« «· «—ÃÌ  Ì ⁄—› =====
+    // ===== √°√£√á √á√°√ä√á√ë√å√≠√ä √≠√ä√ö√ë√ù =====
     target.addEventListener("targetFound", () => {
       scanner.style.display = "none";
       btnBar.classList.add("show");
       playBgm();
     });
 
-    // ===== ·„« «· «—ÃÌ  ÌŒ ›Ì =====
+    // ===== √°√£√á √á√°√ä√á√ë√å√≠√ä √≠√é√ä√ù√≠ =====
     target.addEventListener("targetLost", () => {
       scanner.style.display = "block";
       btnBar.classList.remove("show");
@@ -122,7 +122,7 @@
       bgm.pause();
     });
 
-    // √Ê· ·„”…  › Õ  ’—ÌÕ «·’Ê 
+    // √É√¶√° √°√£√ì√â √ä√ù√ä√ç √ä√ï√ë√≠√ç √á√°√ï√¶√ä
     document.addEventListener("pointerdown", () => {
       if (!bgm.paused) return;
       bgm.play().then(() => {
@@ -130,7 +130,7 @@
       }).catch(() => {});
     }, { once: true });
 
-    // ﬂ· “—«—: ÌÊﬁ› «· «‰Ì ÊÌ‘€¯· ’Ê Â
+    // √ü√° √í√ë√á√ë: √≠√¶√û√ù √á√°√ä√á√§√≠ √¶√≠√î√õ√∏√° √ï√¶√ä√•
     buttons.forEach(({ btn, sound }) => {
       btn.addEventListener("click", () => {
         const wasPlaying = !sound.paused;

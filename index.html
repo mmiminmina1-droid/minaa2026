@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AR للأطفال</title>
+    <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+      body { margin: 0; overflow: hidden; }
+
+      /* ===== شاشة المسح (زي سكانر QR) ===== */
+      #scanner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 68vmin;
+        height: 68vmin;
+        transform: translate(-50%, -50%);
+        z-index: 5;
+        pointer-events: none;
+        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
+        border-radius: 18px;
+        transition: opacity 0.3s;
+      }
+      #scanner.hidden { opacity: 0; }
+      #scanner i { position: absolute; width: 42px; height: 42px; border: 0 solid #00e676; }
+      #scanner i:nth-child(1) { top: 0;    left: 0;  border-top-width: 6px;    border-left-width: 6px;  border-top-left-radius: 18px; }
+      #scanner i:nth-child(2) { top: 0;    right: 0; border-top-width: 6px;    border-right-width: 6px; border-top-right-radius: 18px; }
+      #scanner i:nth-child(3) { bottom: 0; left: 0;  border-bottom-width: 6px; border-left-width: 6px;  border-bottom-left-radius: 18px; }
+      #scanner i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 6px; border-right-width: 6px; border-bottom-right-radius: 18px; }
+      #scanner b {
+        position: absolute;
+        left: 6%;
+        width: 88%;
+        height: 4px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, transparent, #00e676, transparent);
+        box-shadow: 0 0 14px 4px rgba(0, 230, 118, 0.7);
+        animation: scan 2s ease-in-out infinite alternate;
+      }
+      @keyframes scan { from { top: 6%; } to { top: 94%; } }
+
+      /* ===== الأزرار (مخفية لحد ما التارجيت يتعرف) ===== */
+      .btn-bar {
+        position: fixed;
+        bottom: 25px;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        z-index: 10;
+        pointer-events: none;
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(60px) scale(0.6);
+        transition: opacity 0.4s, transform 0.5s cubic-bezier(.34,1.56,.64,1), visibility 0s 0.5s;
+      }
+      .btn-bar.show {
+        visibility: visible;
+        opacity: 1;
+        transform: none;
+        transition: opacity 0.4s, transform 0.5s cubic-bezier(.34,1.56,.64,1);
+      }
+
+      .kid-btn {
+        pointer-events: auto;
+        width: 110px;
+        height: 110px;
+        border: 5px solid #fff;
+        border-radius: 50%;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.15s, box-shadow 0.15s;
+      }
+      #btn1 { background: #ff4d8d; box-shadow: 0 8px 0 #c2185b, 0 12px 18px rgba(0,0,0,0.35); }
+      #btn2 { background: #29b6f6; box-shadow: 0 8px 0 #0277bd, 0 12px 18px rgba(0,0,0,0.35); }
+      .kid-btn:active { transform: translateY(6px) scale(0.95); }
+      #btn1:active { box-shadow: 0 2px 0 #c2185b, 0 4px 8px rgba(0,0,0,0.35); }
+      #btn2:active { box-shadow: 0 2px 0 #0277bd, 0 4px 8px rgba(0,0,0,0.35); }
+
+      .kid-btn.pop { animation: bounce 0.5s ease-out 1; }
+      @keyframes bounce {
+        0%   { transform: translateY(0) scale(1); }
+        40%  { transform: translateY(-14px) scale(1.12); }
+        100% { transform: translateY(0) scale(1); }
+      }
+
+      .star {
+        position: fixed;
+        z-index: 20;
+        pointer-events: none;
+        font-size: 26px;
+        animation: fly 0.8s ease-out forwards;
+      }
+      @keyframes fly {
+        from { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+        to   { opacity: 0; transform: translate(var(--x), var(--y)) scale(0.3) rotate(240deg); }
+      }
+    </style>
+  </head>
+
+  <body>
+    <audio id="sound1" src="./assets/sound1.mp3" preload="auto"></audio>
+    <audio id="sound2" src="./assets/sound2.mp3" preload="auto"></audio>
+    <audio id="bgm" src="./assets/bgm.mp3" preload="auto" loop></audio>
+
+    <div id="scanner"><i></i><i></i><i></i><i></i><b></b></div>
+
+    <div class="btn-bar" id="btnBar">
+      <button id="btn1" class="kid-btn" aria-label="صوت الحيوان"></button>
+      <button id="btn2" class="kid-btn" aria-label="نطق الكلمة"></button>
+    </div>
+
+    <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; showStats: false; uiScanning: no;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      <a-assets>
+        <a-asset-item id="avatarModel" src="./assets/model.glb"></a-asset-item>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity id="target" mindar-image-target="targetIndex: 0">
+        <!--
+          ظهور مشوّق: النموذج يبدأ بحجم 0 ثم "يطلع" بنطّة مطاطية مع لفّة كاملة،
+          وبعدها يفضل يطفو لفوق وتحت.
+          لتغيير حجم النموذج النهائي: غيّر الرقم 0.5 في to: (ثلاث مرات) ولا تلمس باقي الأرقام.
+        -->
+        <a-gltf-model id="avatar" src="#avatarModel"
+          position="0 0 0.1" rotation="0 0 0" scale="0 0 0"
+          animation__pop="property: scale; from: 0 0 0; to: 0.5 0.5 0.5; dur: 1100; easing: easeOutElastic; startEvents: appear"
+          animation__spin="property: rotation; from: 0 -360 0; to: 0 0 0; dur: 1100; easing: easeOutCubic; startEvents: appear"
+          animation__float="property: position; from: 0 0 0.1; to: 0 0.12 0.1; dur: 1200; easing: easeInOutSine; loop: true; dir: alternate; delay: 1200">
+        </a-gltf-model>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      const target = document.getElementById("target");
+      const avatar = document.getElementById("avatar");
+      const scanner = document.getElementById("scanner");
+      const btnBar = document.getElementById("btnBar");
+      const bgm = document.getElementById("bgm");
+      bgm.volume = 0.5;
+      let targetVisible = false;
+
+      const buttons = [
+        { btn: document.getElementById("btn1"), sound: document.getElementById("sound1") },
+        { btn: document.getElementById("btn2"), sound: document.getElementById("sound2") }
+      ];
+
+      // نجوم بتتطاير من نقطة معيّنة
+      function burstAt(cx, cy, count = 10) {
+        const icons = ["⭐", "✨", "🌟", "💫"];
+        for (let i = 0; i < count; i++) {
+          const s = document.createElement("div");
+          s.className = "star";
+          s.textContent = icons[Math.floor(Math.random() * icons.length)];
+          s.style.left = cx + "px";
+          s.style.top = cy + "px";
+          const angle = (Math.PI * 2 * i) / count;
+          const dist = 70 + Math.random() * 90;
+          s.style.setProperty("--x", Math.cos(angle) * dist + "px");
+          s.style.setProperty("--y", Math.sin(angle) * dist + "px");
+          document.body.appendChild(s);
+          setTimeout(() => s.remove(), 800);
+        }
+      }
+
+      function burst(btn) {
+        const r = btn.getBoundingClientRect();
+        burstAt(r.left + r.width / 2, r.top + r.height / 2);
+      }
+
+      function pop(btn) {
+        btn.classList.remove("pop");
+        void btn.offsetWidth;
+        btn.classList.add("pop");
+      }
+
+      function stopAll() {
+        buttons.forEach(({ sound }) => {
+          sound.pause();
+          sound.currentTime = 0;
+        });
+      }
+
+      function playBgm() { bgm.play().catch(() => {}); }
+
+      // ===== لما التارجيت يتعرف =====
+      target.addEventListener("targetFound", () => {
+        targetVisible = true;
+        scanner.classList.add("hidden");
+        btnBar.classList.add("show");            // الأزرار تظهر
+
+        avatar.setAttribute("scale", "0 0 0");
+        avatar.emit("appear");                   // النموذج يطلع بنطّة ولفّة
+        burstAt(innerWidth / 2, innerHeight / 2, 16);
+
+        playBgm();
+      });
+
+      // ===== لما التارجيت يختفي =====
+      target.addEventListener("targetLost", () => {
+        targetVisible = false;
+        scanner.classList.remove("hidden");
+        btnBar.classList.remove("show");         // الأزرار تختفي
+        avatar.setAttribute("scale", "0 0 0");
+        stopAll();
+        bgm.pause();
+      });
+
+      // أول لمسة تفتح تصريح الصوت في المتصفح
+      document.addEventListener("pointerdown", () => {
+        if (targetVisible && bgm.paused) playBgm();
+        else bgm.play().then(() => { if (!targetVisible) bgm.pause(); }).catch(() => {});
+      }, { once: true });
+
+      buttons.forEach(({ btn, sound }) => {
+        btn.addEventListener("click", () => {
+          burst(btn);
+          pop(btn);
+          const wasPlaying = !sound.paused;
+          stopAll();
+          if (!wasPlaying) sound.play();
+        });
+        btn.addEventListener("animationend", () => btn.classList.remove("pop"));
+      });
+    </script>
+  </body>
+</html>

@@ -72,20 +72,14 @@
     <button id="btn2" class="kid-btn" aria-label="ÇáÕæÊ ÇáËÇäí"></button>
   </div>
 
-  <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind; uiScanning: no;"
+  <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; uiScanning: no;"
            color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights"
            vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-
-    <a-assets>
-      <img id="card" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
-    </a-assets>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
     <a-entity id="target" mindar-image-target="targetIndex: 0">
-      <a-plane src="#card" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane>
-
-      <!-- ===== ÇáãæÏíá ÇáÌÏíÏ: assets/model.glb ===== -->
+      <!-- ===== ÇáãæÏíá ÝÞØ — ãÝíÔ ÕæÑ ===== -->
       <a-gltf-model id="avatar" rotation="0 0 0" position="0 0 0.1" scale="0.005 0.005 0.005"
         src="./assets/model.glb"
         animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
@@ -110,14 +104,14 @@
     }
 
     function playBgm() {
-      bgm.play().catch(() => {}); // ÇáãÊÕÝÍÇÊ ãäÚ ÇáÊÔÛíá ÇáÊáÞÇÆí¡ ÈäÍÇæá æáæ ÑÝÖ ãÝíÔ ãÔßáÉ
+      bgm.play().catch(() => {});
     }
 
     // ===== áãÇ ÇáÊÇÑÌíÊ íÊÚÑÝ =====
     target.addEventListener("targetFound", () => {
       scanner.style.display = "none";
       btnBar.classList.add("show");
-      playBgm(); // ÇáÎáÝíÉ ÇáãæÓíÞíÉ ÊÔÊÛá
+      playBgm();
     });
 
     // ===== áãÇ ÇáÊÇÑÌíÊ íÎÊÝí =====
@@ -125,14 +119,14 @@
       scanner.style.display = "block";
       btnBar.classList.remove("show");
       stopAll();
-      bgm.pause(); // ÇáãæÓíÞì ÊÞÝ
+      bgm.pause();
     });
 
-    // Ãæá áãÓÉ Úáì ÇáÔÇÔÉ ÊÝÊÍ ÊÕÑíÍ ÇáÕæÊ (ÞÇäæä ÇáãÊÕÝÍÇÊ)
+    // Ãæá áãÓÉ ÊÝÊÍ ÊÕÑíÍ ÇáÕæÊ
     document.addEventListener("pointerdown", () => {
       if (!bgm.paused) return;
       bgm.play().then(() => {
-        if (!btnBar.classList.contains("show")) bgm.pause(); // áæ ÇáÊÇÑÌíÊ ãÔ ÙÇåÑ æÞøÝåÇ
+        if (!btnBar.classList.contains("show")) bgm.pause();
       }).catch(() => {});
     }, { once: true });
 
